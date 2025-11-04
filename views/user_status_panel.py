@@ -20,6 +20,7 @@ class UserPanel(QWidget):
         self.last_emotion_update = 0
         self.camera_manager = None
         self.current_expression_text = ""  # 카메라 오버레이용 감정 문자열
+        self.current_gesture_text = ""
 
         self.init_ui()
 
@@ -52,6 +53,11 @@ class UserPanel(QWidget):
         info_layout.addWidget(self.voice_label)
         info_layout.addWidget(self.voice_emotion_label)
 
+        self.gesture_label = QLabel("● 제스처 정보")
+        self.gesture_status_label = QLabel("제스처 정보 없음")
+        info_layout.addWidget(self.gesture_label)
+        info_layout.addWidget(self.gesture_status_label)
+
         # 카메라 출력 영역
         self.camera_view_label = QLabel("카메라 화면 출력")
         self.camera_view_label.setStyleSheet("background-color: black; color: white;")
@@ -80,6 +86,8 @@ class UserPanel(QWidget):
         self.gesture_on = checked
         self.update_camera_view_visibility()
         self.gestureToggled.emit(checked)
+        if not checked:
+            self.update_gesture("", 0.0)
 
     def update_camera_view_visibility(self):
         if self.camera_on or self.gesture_on:
@@ -102,8 +110,6 @@ class UserPanel(QWidget):
             self.camera_manager.remove_frame_callback(self.update_camera_frame)
         self.camera_view_label.clear()
 
-    from PyQt5.QtGui import QPainter, QColor, QFont
-
     def update_camera_frame(self, frame):
         if frame is not None:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -114,14 +120,20 @@ class UserPanel(QWidget):
                 self.camera_view_label.width(), self.camera_view_label.height(), Qt.KeepAspectRatio
             )
 
-            # QPainter로 한글 텍스트 오버레이
-            if hasattr(self, 'current_expression_text') and self.current_expression_text:
+            overlay_lines = []
+            if self.current_expression_text:
+                overlay_lines.append(self.current_expression_text)
+            if self.current_gesture_text:
+                overlay_lines.append(self.current_gesture_text)
+
+            if overlay_lines:
                 painter = QPainter(pixmap)
                 painter.setPen(QColor(0, 255, 0))  # 초록색 텍스트
                 font = QFont("Arial", 16)
                 font.setBold(True)
                 painter.setFont(font)
-                painter.drawText(10, 30, self.current_expression_text)
+                for idx, line in enumerate(overlay_lines):
+                    painter.drawText(10, 30 + idx * 30, line)
                 painter.end()
 
             self.camera_view_label.setPixmap(pixmap)
@@ -138,5 +150,13 @@ class UserPanel(QWidget):
         self.face_emotion_label.setText(expression)
         self.current_expression_text = expression
 
+    def update_gesture(self, gesture: str, confidence: float):
+        if gesture:
+            text = f"제스처: {gesture} ({confidence * 100:.1f}%)"
+            self.gesture_status_label.setText(text)
+            self.current_gesture_text = text
+        else:
+            self.gesture_status_label.setText("제스처 정보 없음")
+            self.current_gesture_text = ""
 
 

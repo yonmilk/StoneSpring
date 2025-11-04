@@ -5,7 +5,7 @@ import socket
 from datetime import datetime
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QTextBrowser, QPushButton,
-    QCheckBox, QMessageBox, QLabel, QApplication, QListWidget, QListWidgetItem
+    QCheckBox, QMessageBox, QLabel, QApplication
 )
 from PyQt5.QtCore import Qt, QUrl, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QTextCursor
@@ -15,9 +15,9 @@ from ai.tts_wrapper import speak_text_korean
 from common.recorder import LiveAudioRecorder
 from db.models import Chat
 from markdown2 import markdown
-import subprocess
 from interface.emotion import analyze_emotion as analyze_webcam_emotion
 from interface.camera_manager import CameraManager
+from interface.gesture_recognizer import GestureRecognizer
 import librosa
 import numpy as np
 from ai.voice_emotion_model import predict_emotion
@@ -29,6 +29,7 @@ class ChatPanel(QWidget):
     gestureToggled = pyqtSignal(bool)
     dolbomMessageReceived = pyqtSignal(str, bool)
     chatRefreshRequested = pyqtSignal()
+    gestureDetected = pyqtSignal(str, float)
 
     def __init__(self, user_id: int, user_name: str):
         super().__init__()
@@ -44,7 +45,7 @@ class ChatPanel(QWidget):
 
         self.camera_manager = None
         self.mic_enabled = False
-        self.gesture_process = None
+        self.gesture_recognizer: GestureRecognizer | None = None
         self.last_block_cursor = None
         self.dolbom_started = False
         self.reply_accumulator = ""
@@ -116,16 +117,9 @@ class ChatPanel(QWidget):
     def toggle_gesture(self, checked: bool):
         self.gestureToggled.emit(checked)
         if checked:
-            try:
-                self.gesture_process = subprocess.Popen(["python", "./ai/gesture_recognize.py"])
-                print("제스처 인식 프로세스 시작됨")
-            except Exception as e:
-                QMessageBox.critical(self, "제스처 인식 오류", f"제스처 인식 스크립트 실행 중 오류 발생:\n{str(e)}")
+            self.start_gesture_recognition()
         else:
-            if self.gesture_process is not None:
-                self.gesture_process.terminate()
-                self.gesture_process = None
-                print("제스처 인식 프로세스 종료됨")
+            self.stop_gesture_recognition()
 
     def toggle_camera(self, checked: bool):
         self.cameraToggled.emit(checked)
@@ -133,6 +127,11 @@ class ChatPanel(QWidget):
             self.start_camera()
         else:
             self.stop_camera()
+            if self.gesture_checkbox.isChecked():
+                self.gesture_checkbox.blockSignals(True)
+                self.gesture_checkbox.setChecked(False)
+                self.gesture_checkbox.blockSignals(False)
+                self.stop_gesture_recognition()
 
     def toggle_mic(self, checked: bool):
         self.mic_enabled = checked
@@ -148,6 +147,76 @@ class ChatPanel(QWidget):
                 except Exception as e:
                     print("녹음 중지 오류:", e)
                 self.recorder = None
+
+    def start_gesture_recognition(self):
+        if self.gesture_recognizer is not None:
+            return
+
+        try:
+            self.camera_manager = CameraManager.instance()
+        except RuntimeError as e:
+            QMessageBox.critical(self, "카메라 오류", str(e))
+            self._reset_gesture_checkbox()
+            return
+
+        model_path = "./ai/models/gesture_model.h5"
+        labels_path = "./ai/training/data/gesture_labels.json"
+        try:
+            self.gesture_recognizer = GestureRecognizer(model_path, labels_path)
+        except Exception as exc:
+            QMessageBox.critical(self, "제스처 초기화 오류", str(exc))
+            self.gesture_recognizer = None
+            self._reset_gesture_checkbox()
+            return
+
+        self.gesture_recognizer.gestureRecognized.connect(self.on_gesture_detected)
+        self.gesture_recognizer.statusChanged.connect(self.on_gesture_status_changed)
+
+        try:
+            self.gesture_recognizer.start()
+        except Exception as exc:
+            QMessageBox.critical(self, "제스처 모델 로드 오류", str(exc))
+            self.gesture_recognizer.deleteLater()
+            self.gesture_recognizer = None
+            self._reset_gesture_checkbox()
+            return
+
+        self.camera_manager.add_frame_callback(self.gesture_recognizer.submit_frame)
+        self.camera_manager.start()
+
+        if not self.camera_checkbox.isChecked():
+            self.camera_checkbox.blockSignals(True)
+            self.camera_checkbox.setChecked(True)
+            self.camera_checkbox.blockSignals(False)
+            self.start_camera()
+
+    def stop_gesture_recognition(self):
+        if self.gesture_recognizer is None:
+            return
+
+        if self.camera_manager is not None:
+            self.camera_manager.remove_frame_callback(self.gesture_recognizer.submit_frame)
+
+        self.gesture_recognizer.stop()
+        self.gesture_recognizer.deleteLater()
+        self.gesture_recognizer = None
+        self.gestureDetected.emit("", 0.0)
+
+    def _reset_gesture_checkbox(self):
+        self.gesture_checkbox.blockSignals(True)
+        self.gesture_checkbox.setChecked(False)
+        self.gesture_checkbox.blockSignals(False)
+
+    @pyqtSlot(str)
+    def on_gesture_status_changed(self, message: str):
+        self.chat_display.append(f"<span style='color:gray;'>[제스처] {message}</span>")
+
+    @pyqtSlot(str, float)
+    def on_gesture_detected(self, gesture: str, confidence: float):
+        self.chat_display.append(
+            f"<span style='color:green;'>[제스처] {gesture} ({confidence * 100:.1f}%)</span>"
+        )
+        self.gestureDetected.emit(gesture, confidence)
 
     def send_chat_message(self):
         user_input = self.chat_input.toPlainText().strip()
@@ -296,6 +365,7 @@ class ChatPanel(QWidget):
             self.camera_manager.remove_frame_callback(self.update_camera_frame)
         self.camera_label.clear()
         self.camera_label.setVisible(False)
+        self.gestureDetected.emit("", 0.0)
 
     def update_camera_frame(self, frame):
         if frame is not None:

@@ -39,6 +39,7 @@ class MainView(QWidget):
 
         # 감정 분석 결과 시그널 연결: ChatPanel -> UserPanel의 update_face_expression 메서드
         self.chat_panel.expressionDetected.connect(self.user_panel.update_face_expression)
+        self.chat_panel.gestureDetected.connect(self.user_panel.update_gesture)
 
     def sync_camera_checkbox(self, checked: bool):
         if self._syncing:
