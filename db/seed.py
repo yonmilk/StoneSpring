@@ -1,6 +1,6 @@
-from models import *
-from query import *
-from datetime import datetime
+from db.models import *
+from db.query import *
+from datetime import datetime, timedelta
 
 # 기본 사용자 생성
 user = User(
@@ -56,20 +56,24 @@ insert_pet_emoticon(emoticon)
 print("[더미 생성] 펫 이모티콘 추가 완료")
 
 # 채팅 메시지 삽입
+now = datetime.now()
+video_end = now + timedelta(seconds=2)
+voice_end = now + timedelta(seconds=2)
+
 chat = Chat(
     chat_id=None,
     user_id=user_id,
     message_id=101,
     message="기분이 좀 이상해...",
-    timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    timestamp=now.strftime('%Y-%m-%d %H:%M:%S'),
     video_id=1,
     video_path="/video/101.mp4",
-    video_start_timestamp="00:00:01.000",
-    video_end_timestamp="00:00:03.000",
+    video_start_timestamp=now.strftime('%Y-%m-%d %H:%M:%S'),
+    video_end_timestamp=video_end.strftime('%Y-%m-%d %H:%M:%S'),
     voice_id=2,
     voice_path="/voice/201.wav",
-    voice_start_timestamp="00:00:01.000",
-    voice_end_timestamp="00:00:03.000",
+    voice_start_timestamp=now.strftime('%Y-%m-%d %H:%M:%S'),
+    voice_end_timestamp=voice_end.strftime('%Y-%m-%d %H:%M:%S'),
     e_id=None,
     pet_emotion="걱정해요",
     reply_message="괜찮아, 곧 나아질 거야"
@@ -88,7 +92,7 @@ emotion = UserEmotionAnalysis(
     summary="걱정과 불안이 감지됨",
     time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 )
-insert_emotion_analysis(emotion)
+insert_user_emotion_analysis(emotion)
 print("[더미 생성] 감정 분석 데이터 삽입 완료")
 
 # 로그 기록
