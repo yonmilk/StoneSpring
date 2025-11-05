@@ -296,13 +296,17 @@ class ChatPanel(QWidget):
                             message_id=None,
                             message=self.last_user_message,
                             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            video_id=None, video_path=None,
-                            video_start_timestamp=None, video_end_timestamp=None,
-                            voice_id=None, voice_path=None,
-                            voiceStartTimestamp=None, voiceEndTimestamp=None,
+                            video_id=None,
+                            video_path=None,
+                            video_start_timestamp=None,
+                            video_end_timestamp=None,
+                            voice_id=None,
+                            voice_path=None,
+                            voice_start_timestamp=None,
+                            voice_end_timestamp=None,
                             e_id=msg.get("eId", 5),
                             pet_emotion=msg.get("petEmotion", "기분 좋아요"),
-                            reply_message=full_reply
+                            reply_message=full_reply,
                         )
                         insert_chat(chat)
                         self.chatRefreshRequested.emit()
