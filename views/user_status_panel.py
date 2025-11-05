@@ -10,13 +10,11 @@ from interface.emotion import analyze_emotion as analyze_webcam_emotion
 class UserPanel(QWidget):
     cameraToggled = pyqtSignal(bool)
     micToggled = pyqtSignal(bool)
-    gestureToggled = pyqtSignal(bool)
 
     def __init__(self, user_id=None):
         super().__init__()
         self.user_id = user_id
         self.camera_on = False
-        self.gesture_on = False
         self.last_emotion_update = 0
         self.camera_manager = None
         self.current_expression_text = ""  # 카메라 오버레이용 감정 문자열
@@ -31,15 +29,12 @@ class UserPanel(QWidget):
         toggle_layout = QHBoxLayout()
         self.camera_checkbox = QCheckBox("카메라 ON")
         self.mic_checkbox = QCheckBox("마이크 ON")
-        self.gesture_checkbox = QCheckBox("제스처 ON")
         toggle_layout.addWidget(self.camera_checkbox)
         toggle_layout.addWidget(self.mic_checkbox)
-        toggle_layout.addWidget(self.gesture_checkbox)
         toggle_layout.addStretch()
 
         self.camera_checkbox.toggled.connect(self.emit_camera_toggled)
         self.mic_checkbox.toggled.connect(self.emit_mic_toggled)
-        self.gesture_checkbox.toggled.connect(self.emit_gesture_toggled)
 
         info_layout = QVBoxLayout()
         info_layout.setAlignment(Qt.AlignTop)
@@ -82,15 +77,8 @@ class UserPanel(QWidget):
     def emit_mic_toggled(self, checked: bool):
         self.micToggled.emit(checked)
 
-    def emit_gesture_toggled(self, checked: bool):
-        self.gesture_on = checked
-        self.update_camera_view_visibility()
-        self.gestureToggled.emit(checked)
-        if not checked:
-            self.update_gesture("", 0.0)
-
     def update_camera_view_visibility(self):
-        if self.camera_on or self.gesture_on:
+        if self.camera_on:
             self.camera_view_label.show()
         else:
             self.camera_view_label.hide()
@@ -158,5 +146,4 @@ class UserPanel(QWidget):
         else:
             self.gesture_status_label.setText("제스처 정보 없음")
             self.current_gesture_text = ""
-
 
