@@ -18,6 +18,7 @@ from markdown2 import markdown
 from interface.emotion import analyze_emotion as analyze_webcam_emotion
 from interface.camera_manager import CameraManager
 from interface.gesture_recognizer import GestureRecognizer
+from ai.stt_wrapper import transcribe_audio
 import librosa
 import numpy as np
 from ai.voice_emotion_model import predict_emotion
@@ -50,6 +51,7 @@ class ChatPanel(QWidget):
         self.dolbom_started = False
         self.reply_accumulator = ""
         self.last_emotion_update = 0
+        self.pre_record_text = ""
 
         self.init_ui()
         self.load_chat_history()
@@ -110,7 +112,7 @@ class ChatPanel(QWidget):
         self.camera_label.setFixedSize(320, 240)
         self.camera_label.setStyleSheet("background-color: black;")
         self.camera_label.setVisible(False)
-        layout.addWidget(self.camera_label)
+        layout.addWidget(self.camera_label, alignment=Qt.AlignHCenter)
 
         self.setLayout(layout)
 
@@ -282,8 +284,9 @@ class ChatPanel(QWidget):
                         continue
                     msg = json.loads(line)
                     if msg.get("type") == "stream_chunk":
-                        chunk = msg["chunk"]
-                        self.dolbomMessageReceived.emit(chunk, True)
+                        chunk = msg.get("chunk", "")
+                        if chunk:
+                            self.dolbomMessageReceived.emit(str(chunk), True)
                     elif msg.get("type") == "stream_done":
                         full_reply = self.reply_accumulator
                         self.dolbomMessageReceived.emit(full_reply, False)
@@ -304,6 +307,16 @@ class ChatPanel(QWidget):
                         insert_chat(chat)
                         self.chatRefreshRequested.emit()
                         return
+                    elif msg.get("result") == "fail":
+                        reason = msg.get("reason", "Dolbom 응답을 가져오지 못했습니다.")
+                        self.chat_display.append(
+                            f"<span style='color:red;'>[시스템 오류] {reason}</span>"
+                        )
+                        return
+                    elif msg.get("result") == "success" and msg.get("reply_message"):
+                        reply = msg.get("reply_message", "")
+                        self.dolbomMessageReceived.emit(str(reply), False)
+                        return
             except Exception as e:
                 print("[ChatPanel] stream 수신 오류:", e)
                 break
@@ -319,6 +332,7 @@ class ChatPanel(QWidget):
         if not self.mic_enabled:
             QMessageBox.warning(self, "마이크 비활성", "마이크가 꺼져있습니다.")
             return
+        self.pre_record_text = self.chat_input.toPlainText().strip()
         self.recorder = LiveAudioRecorder()
         self.recorder.start()
         self.start_voice_btn.setEnabled(False)
@@ -326,24 +340,51 @@ class ChatPanel(QWidget):
 
     def stop_recording(self):
         self.stop_voice_btn.setEnabled(False)
+        if self.recorder is None:
+            QMessageBox.warning(self, "녹음 없음", "녹음된 음성이 없습니다.")
+            self.start_voice_btn.setEnabled(True)
+            return
+
+        final_transcription = ""
         try:
             wav_path = self.recorder.stop()
             self.recorder = None
-            # text = transcribe_audio(wav_path)  # STT 임시 비활성화
-            # existing_text = self.chat_input.toPlainText()
-            # self.chat_input.setText(existing_text + " " + text)
+            if not wav_path:
+                QMessageBox.warning(self, "녹음 실패", "음성 파일을 생성하지 못했습니다.")
+                return
 
-            audio_np, sr = librosa.load(wav_path, sr=16000)
-            emotion, conf = predict_emotion(audio_np)
-            print(f"[음성 감정 분석 결과] 감정: {emotion}, 신뢰도: {conf:.4f}")
-            if not np.isnan(conf):
-                self.chat_display.append(f"<span style='color:gray;'>[감정 분석] {emotion} ({conf*100:.1f}%)</span>")
-            else:
-                self.chat_display.append("<span style='color:gray;'>[감정 분석 실패]</span>")
+            try:
+                final_transcription = transcribe_audio(wav_path).strip()
+            except Exception as stt_error:
+                print(f"[STT] 변환 오류: {stt_error}")
+                QMessageBox.warning(self, "STT 오류", f"음성 인식에 실패했습니다.\n{stt_error}")
+
+            try:
+                audio_np, sr = librosa.load(wav_path, sr=16000)
+                emotion, conf = predict_emotion(audio_np)
+                print(f"[음성 감정 분석 결과] 감정: {emotion}, 신뢰도: {conf:.4f}")
+                if not np.isnan(conf):
+                    self.chat_display.append(f"<span style='color:gray;'>[음성 감정 분석] {emotion} ({conf*100:.1f}%)</span>")
+                else:
+                    self.chat_display.append("<span style='color:gray;'>[음성 감정 분석 실패]</span>")
+            except Exception as emotion_error:
+                print(f"[감정 분석 오류] {emotion_error}")
+                QMessageBox.warning(self, "감정 분석 오류", f"음성 감정 분석에 실패했습니다.\n{emotion_error}")
+
         except Exception as e:
-            QMessageBox.critical(self, "감정 분석 오류", f"음성 감정 분석 실패: {e}")
+            QMessageBox.critical(self, "음성 처리 오류", f"음성 처리 실패: {e}")
         finally:
+            self.recorder = None
             self.start_voice_btn.setEnabled(True)
+            self.stop_voice_btn.setEnabled(False)
+            base_text = getattr(self, "pre_record_text", "").strip()
+            if final_transcription:
+                combined = f"{base_text} {final_transcription}".strip() if base_text else final_transcription
+                self.chat_input.setPlainText(combined)
+            else:
+                self.chat_input.setPlainText(base_text)
+            self.chat_input.moveCursor(QTextCursor.End)
+            self.pre_record_text = ""
 
     def on_chat_anchor_clicked(self, url: QUrl):
         text = url.toString()

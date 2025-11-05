@@ -89,9 +89,29 @@ def generate_reply(user_message: str,
         **({ "previous_response_id": previous_response_id } if not stream and previous_response_id else {})
     )
 
-
-    # stream일 경우: generator 반환, ID 없음
     if stream:
-        return (chunk.delta for chunk in response if hasattr(chunk, "delta")), None
-    else:
-        return response.output_text.strip(), response.id
+        def stream_chunks():
+            for event in response:
+                event_type = getattr(event, "type", "")
+                if event_type == "response.output_text.delta":
+                    delta = getattr(event, "delta", "")
+                    if delta:
+                        if isinstance(delta, str):
+                            text = delta
+                        elif hasattr(delta, "text"):
+                            text = getattr(delta, "text", "")
+                        else:
+                            text = str(delta)
+                        if text:
+                            yield text
+                elif event_type == "response.error":
+                    error_msg = getattr(event, "error", "")
+                    message = str(error_msg) if error_msg else "OpenAI 응답 처리 중 오류가 발생했습니다."
+                    yield message
+                    break
+                elif event_type == "response.completed":
+                    break
+
+        return stream_chunks(), None
+
+    return response.output_text.strip(), response.id
