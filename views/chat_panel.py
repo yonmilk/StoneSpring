@@ -211,13 +211,13 @@ class ChatPanel(QWidget):
 
     @pyqtSlot(str)
     def on_gesture_status_changed(self, message: str):
-        self.chat_display.append(f"<span style='color:gray;'>[제스처] {message}</span>")
+        # 제스처 상태 메시지는 로그로만 남기고 채팅창에는 표시하지 않는다.
+        print(f"[Gesture] {message}")
 
     @pyqtSlot(str, float)
     def on_gesture_detected(self, gesture: str, confidence: float):
-        self.chat_display.append(
-            f"<span style='color:green;'>[제스처] {gesture} ({confidence * 100:.1f}%)</span>"
-        )
+        # 제스처 인식 결과는 별도의 패널에서 처리하므로 채팅창에는 표시하지 않는다.
+        print(f"[Gesture] detected: {gesture} ({confidence * 100:.1f}%)")
         self.gestureDetected.emit(gesture, confidence)
 
     def send_chat_message(self):
