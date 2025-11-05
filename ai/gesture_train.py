@@ -13,7 +13,17 @@ def collect_and_train(gesture_name, data_path, model_path, secs_for_action=15):
     """
     사용자로부터 제스처 데이터를 수집하고 기존 제스처 파일들과 함께 모델을 학습합니다.
     """
-    actions = []  
+    labels_path = os.path.join(data_path, "gesture_labels.json")
+    actions = []
+    if os.path.exists(labels_path):
+        try:
+            with open(labels_path, "r", encoding="utf-8") as f:
+                existing_actions = json.load(f)
+                if isinstance(existing_actions, list):
+                    actions.extend(existing_actions)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"[Gesture Train] 기존 레이블을 불러오는 데 실패했습니다: {e}")
+
     seq_length = 30    
 
     # MediaPipe hands model
@@ -86,7 +96,7 @@ def collect_and_train(gesture_name, data_path, model_path, secs_for_action=15):
     # 기존 데이터 로드 및 병합
     x_data = []
     y_data = []
-    for filename in os.listdir(data_path):
+    for filename in sorted(os.listdir(data_path)):
         if filename.startswith('seq_') and filename.endswith('.npy'):
             action_name = filename.split('_')[1]
             if action_name not in actions:
@@ -122,8 +132,8 @@ def collect_and_train(gesture_name, data_path, model_path, secs_for_action=15):
     )
 
     # 모델 학습 후 레이블 저장
-    with open('./ai/training/data/gesture_labels.json', 'w') as f:
-        json.dump(actions, f)
+    with open(labels_path, 'w', encoding='utf-8') as f:
+        json.dump(actions, f, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
     import sys

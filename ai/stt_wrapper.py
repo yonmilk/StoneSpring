@@ -1,7 +1,7 @@
 import time
 from whispercpp_kit import WhisperCPP
 
-_whisper = WhisperCPP(model_name="large-v2")
+_whisper = WhisperCPP(model_name="base")
 _whisper.setup()
 
 def transcribe_audio(file_path: str) -> str:
@@ -35,4 +35,3 @@ def transcribe_worker(audio_queue, callback):
 
 def get_whisper():
     return _whisper
-

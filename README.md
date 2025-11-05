@@ -1,153 +1,236 @@
 # StoneSpring
 
-> ***“당신의 감정을 이해해주는 누군가가 있다면 어떨까요?”***
-돌봄(StoneSpring)은 감정을 말하지 않아도 알아채는 AI 돌봄 친구 Dolbom과의 대화를 통해  
-당신의 하루를 더 따뜻하게 만들어드립니다.
+> *(KDT) ROS2와 인공지능을 활용한 자율주행 로봇 개발자 양성과정 8기* 교육과정 내에서 *Artificial Intelligence*을 주제로한 과제입니다.
 
-<div style="text-align: right">Team: 낭만(浪漫; NangMan)</div>
 
-- 사용자 감정 분석 기반 정서 케어 챗봇  
-- 표정/음성 인식, 자연어 처리, 일정 관리까지 GUI 통합 제공  
-- PyQt5 기반 데스크탑 앱 + 딥러닝 기반 감정 분석 + KoBERT 의도 분석
+사용자의 외로움을 덜어주고, 일상생활에서 필요한 정보를 비서처럼 알려주며, 정신 건강을 챙겨주는 돌봄 챗봇 GUI 프로그램입니다. \
+향후에는 실제 돌봄 로봇과 결합하여 정서적 교감과 실질적 도움을 동시에 제공하는 통합 서비스를 목표로 개발했습니다.
+- 사용자 감정 분석 기반 정서 케어 챗봇
+- 표정/음성 인식, 자연어 처리, 일정 관리까지 GUI 통합 제공
+- PyQt5 기반 데스크탑 앱 + GPT-4o-mini 스트리밍 응답 + DeepFace/Whisper 기반 감정 인식
 
----
 
-## 프로젝트 소개
-사용자의 외로움을 덜어주고, 일상생활에서 필요한 정보를 비서처럼 알려주며, 정신 건강을 챙겨주는 **돌봄 챗봇 GUI 프로그램**입니다. 향후에는 실제 돌봄 로봇과 결합하여 정서적 교감과 실질적 도움을 동시에 제공하는 통합 서비스를 목표로 합니다.
+## 프로젝트 개요
 
----
-## 주제 선정 배경
-최근 인공지능(AI) 기술의 급속한 발전과 함께 사용자와 자연스럽게 소통할 수 있는 챗봇(Chatbot)에 대한 관심이 증가하고 있습니다. 특히 고객 서비스, 교육, 의료 및 개인 비서 분야 등에서 챗봇의 활용이 폭발적으로 늘어나고 있으며, 이는 사용자의 편의성과 접근성을 크게 향상시키는 데 기여하고 있습니다.
+- **기간**: 2025.02.27 ~ 2025.04.07 (5주/팀프로젝트)
+- **팀명**: 낭만(浪漫; NangMan)
 
-동시에 사회적 변화로 인해 1인 가구가 증가하면서 정서적 외로움이나 심리적 스트레스 문제도 점차 심각해지고 있습니다. 혼자 사는 사람들은 귀가 후 대화 상대의 부재로 인해 심리적 안정과 정서적 지원이 부족한 상황이 많습니다. 이로 인해 디지털 포용(Digital Inclusion)과 정서적 지원의 중요성이 더욱 부각되고 있습니다.
 
-기존의 챗봇 시스템은 주로 텍스트 기반의 소통에 머무르는 경우가 많았으나, 인간의 감정을 정확히 이해하고 공감하는 능력은 여전히 부족한 상태입니다. 이에 따라 최근에는 음성 및 감정 분석 기술을 접목하여 사용자의 정서를 더 정확히 파악하고, 대화를 통해 심신의 안정감과 편안함을 제공하는 챗봇의 필요성이 높아지고 있습니다.
-
-본 프로젝트는 음성 감정 분석 기반 챗봇을 통해 사용자와의 소통 품질을 한 단계 높이고, 사용자의 감정을 인식하고 공감하는 방식으로 심리적 안정을 제공하고자 합니다. 이를 통해 1인 가구를 포함한 다양한 사용자에게 정서적 위안을 주고, 보다 편안하고 릴렉스한 생활 환경을 조성하는 것이 목표입니다.
-
-이러한 챗봇 기술은 특히 정서적 지원이 필요한 고객 상담, 정신 건강 관리, 개인 맞춤형 서비스 등에서 혁신적이고 효과적인 활용 가능성을 지니고 있어 그 필요성과 가치가 매우 높다고 판단하여 본 주제를 선정하였습니다.
-
----
-
-## **NangMan**팀 구성
-
-| 역할   | 이름   | 작업 |
+| 역할   | 이름 (Github)  | 작업 |
 |--------|--------|------|
-| 팀장   | 김연우 | 프로젝트 초기 설계<br>디렉토리 구조 및 실행 스크립트(run.sh) 구성<br>GPT-4o-mini 챗봇 업그레이드<br>릴리스 관리 |
-| 팀원   | 나덕윤 | 음성 감정 모델 개발 (CNN+LSTM)<br>MFCC 추출 및 데이터 전처리<br>마이크 테스트 및 성능 개선 |
-| 팀원   | 심채훈 | 제스처 인식 모듈화<br>MLP/SVC 얼굴 감정 모델 개발<br>PyQt 기반 GUI 통합 |
-| 팀원   | 임동욱 | 제스처 모델 학습 |
+| 팀장   | 김연우  ([@yonmilk](https://github.com/yonmilk)) | 프로젝트 초기 설계<br/>PyQt 채팅 GUI 제작<br /> 실시간 AI 채팅 기능(TTS, STT, 스트리밍 출력 등) 구현 |
+| 팀원   | 나덕윤 ([@YuSoYu](https://github.com/YuSoYu)) | 음성 감정 모델 개발 (CNN+LSTM)<br/>MFCC 추출 및 데이터 전처리<br/>마이크 테스트 및 성능 개선 |
+| 팀원   | 심채훈 ([@Huni0128](https://github.com/Huni0128)) | 제스처 인식 모듈화<br/>MLP/SVC 얼굴 감정 모델 개발<br/>PyQt 기반 GUI 통합 |
+| 팀원   | 임동욱 ([@Donguk-popo](https://github.com/Donguk-popo)) | 제스처 모델 학습 |
 
 
----
+### 기술 스택
 
-## 폴더 구조 요약
+| 분류 | 기술 요소 |
+|------|-----------|
+| **언어** | Python 3.12 |
+| **데스크톱 UI** | PyQt5 |
+| **대화 엔진** | OpenAI Responses API (GPT-4o-mini), python-dotenv |
+| **음성 인터페이스** | whispercpp_kit (Whisper large-v2), PyAudio, gTTS, playsound |
+| **비전/제스처** | OpenCV, Mediapipe, DeepFace(ArcFace) + scikit-learn MLP |
+| **음성 감정 분석** | TensorFlow/Keras, librosa |
+| **데이터베이스** | MySQL, mysql-connector-python |
+| **인프라/통신** | Python socket TCP/UDP 서버 |
 
-```bash
-├── ai/           # 딥러닝 모델 및 감정 분석 관련 코드
-├── common/       # 공통 유틸리티 함수
-├── core/         # 챗봇 핵심 로직 (감정 처리, 의도 분석 등)
-├── db/           # 데이터베이스 초기화 및 연동 모듈
-├── interface/    # 사용자 인터페이스 관련 모듈
-├── views/        # PyQt5 기반 화면 구성 파일
-├── network/      # 네트워크/서버 통신 관련 모듈 (확장 대비)
-├── main.py       # 프로그램 실행 진입점
-```
 
----
 
-## 핵심 기술 요약 (Tech Highlights)
-### 감정 인식 및 표현 분석
-- **영상 기반 표정 분석**: 얼굴 표정을 분석하여 감정을 분류 (happy, sad, angry, neutral 등)
-- **음성 기반 감정 판단**: 음성을 분석하여 감정 상태를 파악
+## 프로젝트 결과 및 자료
 
-### 자연어 처리 (NLP)
-- **의도 분류 모델**: KoBERT 기반 분류기로 사용자의 입력 의도를 파악
-- **대화 엔진**: HuggingFace Transformers 기반 문장 생성 또는 응답 템플릿 매칭
+**설계 자료**
+- [Software Requirement Specification (SRS)](https://github.com/addinedu-ros-8th/deeplearning-repo-3/wiki/%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4-%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD-%EB%AA%85%EC%84%B8%EC%84%9C-(SRS))
+- [Interface Specification](https://github.com/addinedu-ros-8th/deeplearning-repo-3/wiki/Interface-Specification)
+- [GUI Specification](https://github.com/addinedu-ros-8th/deeplearning-repo-3/wiki/GUI-Structure)
 
-### 음성 입력 및 변환
-- **음성 인식 입력**: SpeechRecognition을 통해 사용자 음성을 실시간 텍스트로 변환
-- **TTS(Text-to-Speech)**: gTTS를 이용해 챗봇 응답을 음성으로 출력
 
-### 정서 케어 및 페르소나 대화
-- **심심이/캐릭터 스타일 페르소나**: 사용자 취향에 맞춰 다양한 대화 스타일 제공
-- **감정 이력 기반 응답 튜닝**: 반복 감정 상태 저장을 통해 맞춤 대화 흐름 구현 중
+### 구현
 
-### 시스템 구조 및 연동
-- **PyQt5 기반 GUI 인터페이스**: 직관적인 감정 상태 시각화 및 대화 인터페이스
-- **SQLite 연동**: 사용자 대화 로그, 감정 기록, 일정 등을 로컬 데이터베이스에 저장
 
----
+![전체동작](https://github.com/user-attachments/assets/6c8050f3-1440-40ec-9f67-f2b3d8110960)
 
-## 기술 스택
 
-| **분류**             | **사용 기술** |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **프로그래밍 언어**  | ![Python](https://img.shields.io/badge/Python-3.12-blue?style=flat-square&logo=Python&logoColor=white) |
-| **GUI 프레임워크**   | ![PyQt5](https://img.shields.io/badge/PyQt5-GUI%20Framework-green?style=flat-square&logo=qt&logoColor=white) |
-| **영상 처리**        | ![OpenCV](https://img.shields.io/badge/OpenCV-Video%20Processing-orange?style=flat-square&logo=opencv&logoColor=white) |
-| **음성 처리**        | ![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-Audio-yellow?style=flat-square) &nbsp; ![gTTS](https://img.shields.io/badge/gTTS-Text_to_Speech-red?style=flat-square) |
-| **자연어 처리 (NLP)**| ![KoNLPy](https://img.shields.io/badge/KoNLPy-Korean%20NLP-blue?style=flat-square) |
-| **데이터베이스**     | ![SQLite](https://img.shields.io/badge/SQLite-LightweightDB-lightblue?style=flat-square&logo=sqlite) |
 
----
 
-## 시스템 구성
 
-| 구성 요소           | 설명 |
-|--------------------|------|
-| 챗봇 인터페이스     | GUI 기반 사용자 대화 창 구성 |
-| 자연어 처리 (NLP)   | 사용자 입력의 감정 및 의도 분석 |
-| 감정 인식           | 표정(영상) 및 음성 기반의 감정 판단 |
-| 대화 페르소나 시스템 | 사용자 맞춤형 대화 스타일 구현 (심심이, Character.AI 유사) |
 
----
 
-## 영상기반 표정 분석 모델 성능
 
-- **모델 구조**: DeepFace(ArcFace) 임베딩 + MLPClassifier (2 hidden layers: 128 → 64)
-- **입력 데이터**: 표정 이미지 → DeepFace 임베딩 (벡터화)
-- **클래스 구성**: angry, happy, neutral, sad (총 4개)
-- **데이터 분할**: 학습 80% / 테스트 20% (Stratified 방식)
+![AI전체](https://github.com/user-attachments/assets/0dcbac9b-3d1b-4d94-b31f-684573bd12fb)
 
-- **평가 지표**:
-  - 전반적인 **Accuracy**: 약 **89~92% 수준**
-  - 클래스별 Precision / Recall / F1-score:
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/8de988a7-1bd0-4fe3-8822-911b8467bb7f" alt="마이크+채팅1" /></td>
+    <td><img src="https://github.com/user-attachments/assets/e94d3320-9f44-4385-926b-8689eeeaa983" alt="표정" /></td>
+  </tr>    
 
-    <img src="./images/classification_report_bar.png" alt="Classification Report" width="600"/>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/34d1ac60-6068-4ca0-820f-f45152096092" alt="제스처1" /></td>
+    <td><img src="https://github.com/user-attachments/assets/4cd97090-64e2-468c-92ba-cdb817604f54" alt="제스처2" /></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/b354fca6-9685-48c3-8e9c-8732424fa46f" alt="제스처3" /></td>
+    <td><img src="https://github.com/user-attachments/assets/5f9de301-077c-4451-9c32-01432257c53c" alt="제스처4" /></td>
+  </tr>
+</table>
 
-  - Confusion Matrix:
+<table>
+  <tr>
+    <td><img width="812" height="944" alt="GUI-1" src="https://github.com/user-attachments/assets/727c8bba-e7ee-4d9d-acdf-89890ce06d35" /></td>
+    <td><img width="462" height="429" alt="GUI-2" src="https://github.com/user-attachments/assets/cfd2effd-db09-4302-ac78-0af839638d0e" /></td>
+    <td><img width="812" height="944" alt="GUI-3" src="https://github.com/user-attachments/assets/9a204c07-a5ae-4332-9a0f-6a71ad2f22a1" /></td>
+  </tr>
+  <tr>
+    <td><img width="812" height="944" alt="GUI-4" src="https://github.com/user-attachments/assets/37fe0616-0042-4dec-8a69-2a0bf05cce93" /></td>
+    <td><img width="612" height="544" alt="GUI-5" src="https://github.com/user-attachments/assets/132d82f7-a984-4e0c-b4e3-af98bfa880ba" /></td>
+    <td><img width="812" height="944" alt="GUI-6" src="https://github.com/user-attachments/assets/5bf33799-a90d-44b7-bffb-c761b25546a1" /></td>
+  </tr>
+  <tr>
+    <td><img width="812" height="944" alt="GUI-7" src="https://github.com/user-attachments/assets/42de39c4-9a43-4496-8320-6eef5eaeb784" /></td>
+    <td><img width="812" height="944" alt="GUI-8" src="https://github.com/user-attachments/assets/9892507e-a484-4dd3-9d64-819ef9e6711b" /></td>
+    <td></td>
+  </tr>
+</table>
 
-    <img src="./images/confusion_matrix.png" alt="Confusion Matrix" width="600"/>
 
-  - 대용량 이미지 배치 처리 + 중간 저장 기능 탑재 (`.npy` 저장으로 중단 복구 가능)
-  - 학습 모델 및 결과:
-    - `./results/mlp_model.pkl`: 학습 완료된 모델 파일
+<br/>
 
----
-## 🧠 음성 감정 분석 모델
-### 사용된 기술
-- 프레임 기반 음성 특성: MFCC
-- 딥러닝 프레임워크: TensorFlow / Keras
-- 최적화 함수: Adam
-- 평가지표:
-- Test Accuracy Epoch 30
-  - <img src="https://github.com/user-attachments/assets/3d0df76b-536a-4425-a895-44a7dcf43515" alt="Training Accuracy" width="600"/>
-  - 현재 저장된 모델은 epoch 230에 조기 종료된 Accuracy 96% 모델로 voice_emotion_model.keras or voice_emotion_model.h5 
----
+**Voice Emotion Model**
 
-## 참고 서비스
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/a27f86b5-0abe-4e4a-b2e4-ba876b7c586d" alt="voice_emotion-1" /></td>
+    <td><img src="https://github.com/user-attachments/assets/16f9c737-db04-433e-8978-d82c488777d6" alt="voice_emotion-2" /></td>
+    <td></td>
+  </tr>
+</table>
 
-| 분류         | 사례 |
-|--------------|------|
-| 페르소나 챗봇 | [SimSimi](https://simsimi.com), [Character.AI](https://beta.character.ai/) |
-| 로봇 + AI 펫  | Sony AIBO, RoboHon |
-| 돌봄 로봇     | Pepper, ElliQ |
+- 데이터셋: AI Hub `감성 및 발화 스타일별 음성합성 데이터` (7개 감정 레이블 구성)
+- 전처리:
+    - JSON을 Pandas DataFrame으로 변환해 메타데이터와 파일 경로를 정규화
+    - 클래스 불균형을 조정한 뒤 MFCC(40×100) 스펙트럼을 추출하고 `.npy`에 캐시
+    - 감정 라벨을 정수 인코딩하여 Softmax 출력과 매핑
+- 모델 학습:
+    - TensorFlow 기반 Conv2D → BatchNorm → MaxPool 블록 3단과 Dropout을 포함한 CNN 구조
+    - 입력 형태 `(40, 100, 1)`을 사용하는 분류기, 마지막 단계는 Dense + Softmax(len(labels))
+    - `MFCCGenerator`로 배치 단위 로딩, EarlyStopping(patience=30)과 ModelCheckpoint로 학습 안정화
+- 평가:
+  <table>
+    <tr>
+      <td><img width="1979" height="780" alt="voice_emotion_model-1" src="https://github.com/user-attachments/assets/806f7d21-405a-48b8-9817-c2ebe6ec5c2a" /></td>
+      <td><img width="1389" height="490" alt="voice_emotion_model-2" src="https://github.com/user-attachments/assets/13e8ea25-c8cc-47c7-9ef2-70353f106061" /></td>
+    </tr>
+    <tr>
+      <td><img width="1389" height="490" alt="voice_emotion_model-3" src="https://github.com/user-attachments/assets/6e905ef4-f75d-4acc-94be-c83d156a4b4a" /></td>
+      <td><img width="1189" height="490" alt="voice_emotion_model-4" src="https://github.com/user-attachments/assets/f6a55d25-2644-4183-80b7-50b08bfce0ac" /></td>
+    </tr>
+  </table>
+    - 학습/검증 손실 곡선을 모니터링하며 최저 `val_loss` 모델을 채택
+    - 7-class 학습에서 epoch 100~300 구간에서 안정 수렴하며, confusion matrix로 클래스별 오분류를 검토
 
----
+<br/>
+
+**Face Emotion Model**
+
+![face_emotion](https://github.com/user-attachments/assets/61e4c2d7-6803-4332-81af-7d1b1a67aa99)
+
+- 데이터셋: AI Hub `한국인 감정인식을 위한 복합 영상` (행복·슬픔·분노·중립 4클래스)
+- 전처리:
+    - 클래스별 5,000장으로 다운샘플링하여 데이터 균형 확보
+    - MTCNN으로 얼굴 영역을 검출한 뒤 EYE_THRESHOLD로 기울어진 샘플 제거
+    - 최대 너비 640px 기준으로 리사이징하고, crop 이미지를 저장
+- 모델 학습:
+    - DeepFace ArcFace로 512차원 얼굴 임베딩을 생성
+    - scikit-learn `MLPClassifier(hidden_layer_sizes=(128, 64))`를 사용해 감정 분류
+    - 일괄 처리와 중간 저장으로 학습 파이프라인을 안정화
+- 평가:
+    - 8:2로 분할한 검증 세트에서 `classification_report`를 산출
+  <table>
+    <tr>
+      <td><img width="640" height="480" alt="face_emotion_model-1" src="https://github.com/user-attachments/assets/7a371d42-ef53-49e9-bbd7-05a50331c946" /></td>
+      <td><img width="600" height="500" alt="face_emotion_model-2" src="https://github.com/user-attachments/assets/dba18366-505b-4414-97ae-8f022595fd3c" /></td>
+    </tr>
+  </table>
+    - happy 클래스 F1 ≈ 0.89로 최고 성능, angry/sad는 0.75~0.78 범위에서 상호 오분류가 발생
+    - 혼동 행렬을 분석해 분노/슬픔 데이터 보강 계획을 수립
+
+<br/>
+
+
+**Gesture Recognition Model**
+
+![gesture](https://github.com/user-attachments/assets/afe35e53-65ef-44eb-bfb2-08a05c1ef85b)
+
+- 데이터 수집:
+    - 사용자가 제스처를 10초간 촬영하면 MediaPipe Hands로 21개 손 관절을 추출
+    - 손 좌표와 관절 각도를 정규화해 30프레임 시퀀스의 99개 특징 벡터로 변환
+    - 누적 `.npy` 데이터를 기반으로 신규 제스처 추가 시 전체 재학습 가능
+- 모델 학습:
+    - 입력 `(30, 99)`을 사용하는 LSTM(64, ReLU) → Dense(32, ReLU) → Softmax(len(actions)) 구조
+    - 학습 완료 후 실시간 추론에 사용할 가중치를 저장
+- 평가:
+    <img width="1189" height="590" alt="gesture-model" src="https://github.com/user-attachments/assets/6dd93f00-cfbe-4a39-a9f3-91bfbe155f34" />
+    - `gesture_recognize.py` 실시간 테스트에서 확률 0.8 미만 결과를 무시하고, 동일 추론이 3프레임 연속일 때만 제스처로 확정
+    - 조명 변화와 배경 노이즈 환경에서 반복 시연하며 사용자별 인식률을 검증
+
+<br/><br/><br/>
+
+
+### System Architecture
+
+**최종 목표**
+
+<img width="1342" height="1304" alt="system_architecture" src="https://github.com/user-attachments/assets/9338e507-90f2-4a2b-bcde-e46244e95df5" />
+
+<table>
+  <tr>
+    <td><div>v0.1.0</div><img width="964" height="625" alt="system_architecture_0 1 0" src="https://github.com/user-attachments/assets/9c4f1c9f-fe3b-4aea-8269-1d31b73fe3a7" /></td>
+    <td><div>v0.2.0</div><img width="1054" height="444" alt="system_architecture_0 2 0" src="https://github.com/user-attachments/assets/c6a0802a-d7f6-4f65-9540-92d96f49bba5" /></td>
+    <td><div>v0.3.0</div><img width="945" height="765" alt="system_architecture_0 3 0" src="https://github.com/user-attachments/assets/ab7c4907-e848-4ec9-917a-27735a0b1799" /></td>
+  </tr>
+</table>
+
+
+### Data Structure
+
+[참고 자료](https://github.com/addinedu-ros-8th/deeplearning-repo-3/wiki/%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0-%EC%B0%B8%EA%B3%A0-%EC%9E%90%EB%A3%8C)
+
+<img width="2160" height="2082" alt="data_structure" src="https://github.com/user-attachments/assets/fa27f37a-c672-40be-b6ed-12fc9f636d69" />
+
+<table>
+  <tr>
+    <td><img width="1278" height="1312" alt="data_structure_1" src="https://github.com/user-attachments/assets/53cf7340-fd70-4858-9208-d503022752e5" /></td>
+    <td><img width="1268" height="1694" alt="data_structure_2" src="https://github.com/user-attachments/assets/a9a5daec-c050-4fb1-a389-adee8604d8c7" /></td>
+    <td><img width="1200" height="640" alt="data_structure_3" src="https://github.com/user-attachments/assets/ebd618ef-2eb0-4d11-84a4-d597554bd1b2" /></td>
+  </tr>
+</table>
+
+
+
+### Sequence Diagram
+
+<img width="1616" height="893" alt="sequence_diagram_1" src="https://github.com/user-attachments/assets/fb54ee8e-b56b-4a6e-af74-4c4cd09cafb1" />
+
+<table>
+  <tr>
+    <td><img width="1163" height="572" alt="sequence_diagram_2" src="https://github.com/user-attachments/assets/e34831d3-ff66-4c7a-925e-013b16baa10e" /></td>
+    <td><img width="1690" height="607" alt="sequence_diagram_3" src="https://github.com/user-attachments/assets/325dbfaa-1b34-4865-81c1-dfb173f4ce0a" /></td>
+  </tr>
+  <tr>
+    <td><img width="1214" height="895" alt="sequence_diagram_4" src="https://github.com/user-attachments/assets/a98c8385-c77b-4f21-aa72-f8211441c04f" /></td>
+    <td><img width="1837" height="643" alt="sequence_diagram_5" src="https://github.com/user-attachments/assets/6bbe332a-72aa-4fac-94f3-b39fdd9b4357" /></td>
+  </tr>
+</table>
+
 
 ## 설치 및 실행 방법
 
 ```shell
 bash run.sh
 ```
+
+
+

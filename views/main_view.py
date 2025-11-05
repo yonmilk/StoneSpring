@@ -32,13 +32,10 @@ class MainView(QWidget):
         self.chat_panel.micToggled.connect(self.sync_mic_checkbox)
         self.user_panel.camera_checkbox.toggled.connect(self.sync_camera_checkbox)
         self.user_panel.mic_checkbox.toggled.connect(self.sync_mic_checkbox)
-        
-        # 제스처 체크박스 동기화 연결 (양쪽 패널에 gesture_checkbox가 있어야 함)
-        self.chat_panel.gestureToggled.connect(self.sync_gesture_checkbox)
-        self.user_panel.gesture_checkbox.toggled.connect(self.sync_gesture_checkbox)
 
         # 감정 분석 결과 시그널 연결: ChatPanel -> UserPanel의 update_face_expression 메서드
         self.chat_panel.expressionDetected.connect(self.user_panel.update_face_expression)
+        self.chat_panel.gestureDetected.connect(self.user_panel.update_gesture)
 
     def sync_camera_checkbox(self, checked: bool):
         if self._syncing:
@@ -66,18 +63,4 @@ class MainView(QWidget):
         self.user_panel.mic_checkbox.blockSignals(False)
         # 실제 마이크 on/off 기능 호출 (ChatPanel에서 처리)
         self.chat_panel.toggle_mic(checked)
-        self._syncing = False
-
-    def sync_gesture_checkbox(self, checked: bool):
-        if self._syncing:
-            return
-        self._syncing = True
-        self.chat_panel.gesture_checkbox.blockSignals(True)
-        self.user_panel.gesture_checkbox.blockSignals(True)
-        self.chat_panel.gesture_checkbox.setChecked(checked)
-        self.user_panel.gesture_checkbox.setChecked(checked)
-        self.chat_panel.gesture_checkbox.blockSignals(False)
-        self.user_panel.gesture_checkbox.blockSignals(False)
-        # 실제 제스처 on/off 기능 호출 (ChatPanel에서 처리)
-        self.chat_panel.toggle_gesture(checked)
         self._syncing = False
